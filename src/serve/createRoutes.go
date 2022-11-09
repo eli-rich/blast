@@ -18,7 +18,12 @@ func createRoutes(router *gin.Engine, dir string) {
 		if filepath.Base(pathname) == "index.html" {
 			refresh.InjectScript(router, pathname)
 		} else {
-			relativePath := strings.Replace(pathname, root, "", 1)
+			var relativePath string
+			if root == "." {
+				relativePath = pathname
+			} else {
+				relativePath = strings.Replace(pathname, root, "", 1)
+			}
 			router.StaticFile(relativePath, pathname)
 		}
 	}

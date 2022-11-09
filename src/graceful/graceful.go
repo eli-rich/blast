@@ -12,7 +12,7 @@ func Graceful(dir string, hot bool) {
 	signal.Notify(thread, os.Interrupt)
 	go func() {
 		<-thread
-		fmt.Println("Gracefully shutting down")
+		fmt.Println("\nGracefully shutting down")
 		reader, err := os.ReadFile(dir + "/index.html")
 		if err != nil {
 			panic(err)
