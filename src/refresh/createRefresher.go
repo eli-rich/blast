@@ -62,13 +62,20 @@ func CreateRefresher(hot bool, dir string) {
 	f.Write([]byte(injectionContent))
 }
 
-func InjectScript(router *gin.Engine, indexPath string) {
+func InjectScript(router *gin.Engine, indexPath string, hot bool) {
 	tmpl := template.Must(template.ParseFiles(indexPath))
 	f, err := os.Create(indexPath)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-	tmpl.Execute(f, Injection{Inject: "<script src=\"/blast-ws.js\" type=\"module\" defer></script>"})
-	router.StaticFile("/", indexPath)
+	if !hot {
+		tmpl.Execute(f, Injection{Inject: "<!-- {{.Inject}} -->"})
+	} else {
+		tmpl.Execute(f, Injection{Inject: "<script src=\"/blast-ws.js\" type=\"module\" defer></script>"})
+	}
+	router.GET("/", func(c *gin.Context) {
+		router.LoadHTMLFiles(indexPath)
+		c.HTML(200, "index.html", nil)
+	})
 }

@@ -17,7 +17,7 @@ func createRoutes(router *gin.Engine, dir string) {
 	filepath.WalkDir(dir, visit)
 	for _, pathname := range pathnames {
 		if filepath.Base(pathname) == "index.html" {
-			refresh.InjectScript(router, pathname)
+			refresh.InjectScript(router, pathname, HOT)
 		} else {
 			var relativePath string
 			if root == "." {
