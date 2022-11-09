@@ -58,8 +58,8 @@ func CreateRefresher(hot bool, dir string) {
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
 	f.Write([]byte(injectionContent))
+	f.Close()
 }
 
 func InjectScript(router *gin.Engine, indexPath string, hot bool) {

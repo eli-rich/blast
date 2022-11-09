@@ -4,9 +4,9 @@ go 1.19
 
 require (
 	github.com/fatih/color v1.13.0
-	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/gorilla/websocket v1.5.0
+	github.com/rjeczalik/notify v0.9.2
 )
 
 require (

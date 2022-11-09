@@ -3,53 +3,25 @@ package watcher
 import (
 	"log"
 
-	"github.com/fsnotify/fsnotify"
+	"github.com/rjeczalik/notify"
 )
 
-var Watch *fsnotify.Watcher
+var watcherChannel chan notify.EventInfo
 
-func RootWatcher(hot bool, dir string, thread chan bool) {
+func Init(hot bool) chan notify.EventInfo {
 	if !hot {
-		return
+		return nil
 	}
-	watcher, err := fsnotify.NewWatcher()
-	Watch = watcher
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer Watch.Close()
-	err = Watch.Add(dir)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	go listen(thread)
-	<-make(chan struct{})
+	watcherChannel = make(chan notify.EventInfo, 1)
+	return watcherChannel
 }
 
-func listen(thread chan bool) {
+func Watch(dir string, thread chan notify.EventInfo) {
+	if err := notify.Watch(dir, watcherChannel, notify.All); err != nil {
+		log.Fatalln(err)
+	}
+	defer notify.Stop(watcherChannel)
 	for {
-		select {
-		case event, ok := <-Watch.Events:
-			if !ok {
-				return
-			}
-			// log.Println("event:", event)
-			if event.Has(fsnotify.Write) {
-				thread <- true
-			}
-			// Code below is buggy, TODO: fix. Some events fire twice and remove does not fire on macOS.
-			/* else if event.Has(fsnotify.Create) {
-				thread <- true
-			} else if event.Has(fsnotify.Remove) {
-				thread <- true
-			} else if event.Has(fsnotify.Rename) {
-				thread <- true
-			}*/
-		case err, ok := <-Watch.Errors:
-			if !ok {
-				return
-			}
-			log.Println("error:", err)
-		}
+		thread <- <-watcherChannel
 	}
 }

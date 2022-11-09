@@ -5,8 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-
-	"github.com/BlazingFire007/blast/src/watcher"
 )
 
 func Graceful(dir string, hot bool) {
@@ -15,9 +13,9 @@ func Graceful(dir string, hot bool) {
 	go func() {
 		<-thread // wait for os interrupt
 		fmt.Println("\nGracefully shutting down")
-		if watcher.Watch != nil {
-			watcher.Watch.Close()
-		}
+		// if watcher.Watch != nil {
+		// 	watcher.Watch.Close()
+		// }
 		reader, err := os.ReadFile(dir + "/index.html")
 		if err != nil {
 			panic(err)

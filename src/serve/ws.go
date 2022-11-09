@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/BlazingFire007/blast/src/watcher"
 	"github.com/gorilla/websocket"
 )
 
@@ -27,7 +26,6 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 		if string(message) == "hello" {
 			conn.WriteMessage(websocket.TextMessage, []byte("hello"))
 			go pingInterval(conn)
-			go reload(conn)
 		}
 	}
 }
@@ -36,15 +34,5 @@ func pingInterval(conn *websocket.Conn) {
 	for {
 		time.Sleep(10 * time.Second)
 		conn.WriteMessage(websocket.TextMessage, []byte("ping"))
-	}
-}
-
-func reload(conn *websocket.Conn) {
-	thread := make(chan bool)
-	go watcher.RootWatcher(HOT, root, thread)
-	for {
-		<-thread // wait for a change
-		log.Println("Change detected, reloading")
-		conn.WriteMessage(websocket.TextMessage, []byte("reload"))
 	}
 }
