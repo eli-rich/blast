@@ -59,7 +59,7 @@ func (c *FlagResults) Init() {
 func (c *FlagResults) setData(port int, dir string, hot bool) {
 	c.Port = port
 	c.Dir = dir
-	c.Hot = !hot
+	c.Hot = hot // disabled by default
 }
 
 func verify(port int, dir string) (int, string) {
