@@ -10,9 +10,10 @@ import (
 )
 
 var pathnames []string
+var root string
 
 func createRoutes(router *gin.Engine, dir string) {
-	root := dir
+	root = dir
 	filepath.WalkDir(dir, visit)
 	for _, pathname := range pathnames {
 		if filepath.Base(pathname) == "index.html" {

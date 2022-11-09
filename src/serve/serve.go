@@ -12,6 +12,7 @@ var HOT bool
 func Serve(port int, dir string, hot bool) {
 	HOT = hot
 	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
 	router.GET("/blast/ws", func(c *gin.Context) {
 		wshandler(c.Writer, c.Request)
 	})

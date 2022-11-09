@@ -33,7 +33,7 @@ ws.onmessage = event => {
       ws.close();
       break;
     case 'reload':
-      window.location.reload();
+      window.location.reload(true);
       break;
     case 'hello':
       console.log('Hello from server');
