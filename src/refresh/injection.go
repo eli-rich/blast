@@ -4,18 +4,17 @@ import (
 	"fmt"
 	"os"
 	"text/template"
-
-	"github.com/gin-gonic/gin"
 )
 
 var injectionScriptPath string
+var IndexPath string
 
 type Injection struct {
 	Inject string
 }
 
 const injectionContent = `
-const url = 'ws://localhost:3000/blast/ws';
+const url = 'ws://localhost:3000/ws:blast';
 const ws = new WebSocket(url);
 
 ws.onopen = () => {
@@ -46,12 +45,18 @@ ws.onmessage = event => {
 ws.onclose = () => {
   console.log('Disconnected from server');
 };
+
+window.onbeforeunload = () => {
+  ws.close = () => {};
+  ws.send('close');
+  ws.close();
+};
+
+
 `
 
 func CreateRefresher(hot bool, dir string) {
-	if !hot {
-		return
-	}
+	IndexPath = dir + "/index.html"
 	base := dir
 	injectionScriptPath = fmt.Sprintf("%s/blast-ws.js", base)
 	f, err := os.Create(injectionScriptPath)
@@ -60,22 +65,15 @@ func CreateRefresher(hot bool, dir string) {
 	}
 	f.Write([]byte(injectionContent))
 	f.Close()
-}
-
-func InjectScript(router *gin.Engine, indexPath string, hot bool) {
-	tmpl := template.Must(template.ParseFiles(indexPath))
-	f, err := os.Create(indexPath)
+	tmpl := template.Must(template.ParseFiles(IndexPath))
+	f, err = os.Create(IndexPath)
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
 	if !hot {
 		tmpl.Execute(f, Injection{Inject: "<!-- {{.Inject}} -->"})
 	} else {
 		tmpl.Execute(f, Injection{Inject: "<script src=\"/blast-ws.js\" type=\"module\" defer></script>"})
 	}
-	router.GET("/", func(c *gin.Context) {
-		router.LoadHTMLFiles(indexPath)
-		c.HTML(200, "index.html", nil)
-	})
+	f.Close()
 }

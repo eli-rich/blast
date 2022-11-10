@@ -6,27 +6,34 @@ import (
 
 	"github.com/BlazingFire007/blast/src/logger"
 	"github.com/BlazingFire007/blast/src/watcher"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 )
 
 var HOT bool
 
 func Serve(port int, dir string, hot bool) {
 	HOT = hot
-	gin.SetMode(gin.DebugMode)
-	router := gin.Default()
-	Initialize(router, dir)
-	AddRoutes(dir)
+	app := fiber.New()
+	initializeRouter(dir, app)
+	initializePaths(dir)
+	app.Static("/", string(ROOT), fiber.Static{
+		CacheDuration: 100 * time.Millisecond,
+		ModifyResponse: func(c *fiber.Ctx) error {
+			c.Response().Header.Add("Cache-Control", "no-store")
+			return nil
+		},
+	})
+	// app.Use(cache.Config{
 
+	// })
 	if HOT {
-		router.GET("/blast/ws", func(c *gin.Context) {
-			wshandler(c.Writer, c.Request)
-		})
+		app.Use("/ws", wsmiddle)
+		app.Get("/ws:blast", websocket.New(wsHandler))
 		time.Sleep(500 * time.Millisecond)
-		watcherChannel := watcher.Init(HOT)
-		go watcher.Watch(dir, watcherChannel)
+		watcher.Init(HOT)
+		go watcher.Watch(dir, watcher.WatcherChannel)
 	}
-
-	logger.Success(fmt.Sprintf("Serving %s on port %d", dir, port))
-	router.Run(fmt.Sprintf(":%d", port))
+	logger.Success(fmt.Sprintf("Serving %s", dir))
+	app.Listen(fmt.Sprintf(":%d", port))
 }

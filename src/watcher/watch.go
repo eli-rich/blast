@@ -6,22 +6,22 @@ import (
 	"github.com/rjeczalik/notify"
 )
 
-var watcherChannel chan notify.EventInfo
+var WatcherChannel chan notify.EventInfo
 
 func Init(hot bool) chan notify.EventInfo {
 	if !hot {
 		return nil
 	}
-	watcherChannel = make(chan notify.EventInfo, 1)
-	return watcherChannel
+	WatcherChannel = make(chan notify.EventInfo, 1)
+	return WatcherChannel
 }
 
 func Watch(dir string, thread chan notify.EventInfo) {
-	if err := notify.Watch(dir, watcherChannel, notify.All); err != nil {
+	if err := notify.Watch(dir, WatcherChannel, notify.All); err != nil {
 		log.Fatalln(err)
 	}
-	defer notify.Stop(watcherChannel)
+	defer notify.Stop(WatcherChannel)
 	for {
-		thread <- <-watcherChannel
+		thread <- <-WatcherChannel
 	}
 }

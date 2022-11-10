@@ -21,3 +21,8 @@ func Success(message string) {
 	green := color.New(color.FgGreen).PrintfFunc()
 	green("[SUCCESS]: %s\n", message)
 }
+
+func Info(message string) {
+	blue := color.New(color.FgBlue).PrintfFunc()
+	blue("[INFO]: %s\n", message)
+}

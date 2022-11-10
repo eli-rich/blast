@@ -2,37 +2,36 @@ package serve
 
 import (
 	"log"
-	"net/http"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.com/BlazingFire007/blast/src/watcher"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 )
 
-var wsupgrader = websocket.Upgrader{}
+var PING_INTERVAL = 1 * time.Second
+var LAST_RESPONSE = time.Now()
 
-func wshandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := wsupgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Fatalln(err)
-		return
+func wsmiddle(c *fiber.Ctx) error {
+	if websocket.IsWebSocketUpgrade(c) {
+		c.Locals("allowed", true)
+		return c.Next()
 	}
-	defer conn.Close()
-
-	for {
-		_, message, err := conn.ReadMessage()
-		if err != nil {
-			break
-		}
-		if string(message) == "hello" {
-			conn.WriteMessage(websocket.TextMessage, []byte("hello"))
-			go pingInterval(conn)
-		}
-	}
+	return fiber.ErrUpgradeRequired
 }
 
-func pingInterval(conn *websocket.Conn) {
-	for {
-		time.Sleep(10 * time.Second)
-		conn.WriteMessage(websocket.TextMessage, []byte("ping"))
+func wsHandler(c *websocket.Conn) {
+
+	err := c.WriteMessage(websocket.TextMessage, []byte("hello"))
+	if err != nil {
+		log.Fatalln(err)
 	}
+	listenForReload(c)
+
+}
+func listenForReload(c *websocket.Conn) {
+	change := <-watcher.WatcherChannel
+	log.Println(change)
+	c.WriteMessage(websocket.TextMessage, []byte("reload"))
+	c.Close()
 }
