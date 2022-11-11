@@ -13,7 +13,6 @@ import (
 type FlagResults struct {
 	Port int
 	Dir  string
-	Hot  bool
 }
 
 func (c *FlagResults) Init() {
@@ -32,12 +31,6 @@ func (c *FlagResults) Init() {
 				Aliases: []string{"d"},
 				Value:   ".",
 				Usage:   "directory of static files to host",
-			},
-			&cli.BoolFlag{
-				Name:    "refresh",
-				Aliases: []string{"r"},
-				Value:   false,
-				Usage:   "disable hot refreshing",
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
@@ -59,7 +52,6 @@ func (c *FlagResults) Init() {
 func (c *FlagResults) setData(port int, dir string, hot bool) {
 	c.Port = port
 	c.Dir = dir
-	c.Hot = hot // disabled by default
 }
 
 func verify(port int, dir string) (int, string) {
