@@ -11,7 +11,7 @@ import (
 func Serve(port int, dir string) {
 	app := fiber.New()
 	app.Static("/", string(dir), fiber.Static{
-		CacheDuration: 100 * time.Millisecond,
+		CacheDuration: 10 * time.Millisecond,
 		ModifyResponse: func(c *fiber.Ctx) error {
 			c.Response().Header.Add("Cache-Control", "no-store")
 			return nil
